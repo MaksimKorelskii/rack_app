@@ -1,5 +1,16 @@
+# /time?format=year%2Cmonth%2Cday
+
 class FormatTime
   TYPES = %w[year month day hour minute second]
+
+  FORMATS = {
+    'year' => '%Y',
+    'month' => '%m',
+    'day' => '%d',
+    'hour' => '%H',
+    'minute' => '%M',
+    'second' => '%S'
+  }.freeze
 
   attr_reader :errors
 
@@ -19,9 +30,7 @@ class FormatTime
   private
 
   def parse_formats(format)
-    parsed_formats = format.map do |t|
-      Time.now.public_send(t.to_sym)
-    end
-    parsed_formats.join('-')
+    parsed_formats = format.map { |data| FORMATS[data] }.join('-')
+    Time.now.strftime(parsed_formats)
   end
 end

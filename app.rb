@@ -1,40 +1,29 @@
 require_relative 'format_time'
 
 class App
+  attr_reader :status, :body
+
   def call(env)
     @request = Rack::Request.new(env)
-
-    response_handler
-    [status, {}, body]
+    return response_handler if request_time?
+    
+    response(404, 'Not found')
   end
 
   private
 
+  def request_time?
+    @request.get? && @request.path == '/time' && @request.params['format']
+  end
+
+  def response(status, body)
+    [status, { 'Content-Type' => 'text/plain' }, ["#{body}\n"]]
+  end
+
   def response_handler
-    return invalid_response if @request.path_info != '/time' || @request.query_string.empty?
+    format_time = FormatTime.new(@request)
+    return response(200, format_time.parsed_formats) if format_time.format_valid?
 
-    @format_time = FormatTime.new(@request)
-    @format_time.format_valid? ? valid_format_response : invalid_format_response
-  end
-
-  attr_reader :status
-
-  def body
-    [@content]
-  end
-
-  def valid_format_response
-    @status = 200
-    @content = @format_time.parsed_formats
-  end
-
-  def invalid_format_response
-    @status = 400
-    @content = "Unknown time format: #{@format_time.errors}"
-  end
-
-  def invalid_response
-    @status = 404
-    @content = "Not found."
+    response(400, "Unknown time format: #{format_time.errors}")
   end
 end

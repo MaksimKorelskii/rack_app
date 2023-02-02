@@ -1,8 +1,4 @@
-# /time?format=year%2Cmonth%2Cday
-
 class FormatTime
-  TYPES = %w[year month day hour minute second]
-
   FORMATS = {
     'year' => '%Y',
     'month' => '%m',
@@ -16,7 +12,7 @@ class FormatTime
 
   def initialize(params)
     @parsed_query_string = params['format'].split(',')
-    @errors = @parsed_query_string - TYPES
+    @errors = @parsed_query_string - FORMATS.keys
   end
 
   def parsed_formats
